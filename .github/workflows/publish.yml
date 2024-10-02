@@ -1,0 +1,43 @@
+name: NPM Publish
+
+on:
+  push:
+    branches:
+      - release/* 
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18' 
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Lint and test
+        run: |
+          npm run lint
+          npm test
+
+      - name: Configure npm
+        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Bump patch version
+        run: |
+          git config --global user.email "pschoen325@gmail.com"
+          git config --global user.name "Paul Schoen"
+          npm version patch
+          git push origin HEAD --follow-tags
+
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
