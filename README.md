@@ -101,38 +101,6 @@ const state = useStore();
 const bears = useStore((state) => state.bears);
 ```
 
-### `zustand-rules/separate-action-creators`
-
-**Ensures action creators are separated from state logic** in Zustand stores, following Flux-inspired architecture. Action creators should not directly mutate the store’s state; instead, they should be separate and use the `set` function to update the state.
-
-#### Rule Details
-
-This rule checks for action creators whose names start with `set` (e.g., `setBears`, `setFish`), and ensures they do not contain direct state mutations. If direct state mutations are detected inside these action creators, an error is reported.
-
-#### Examples
-
-🚫 **Incorrect**:
-
-```javascript
-// Direct state mutation inside action creator
-const useStore = create((set) => ({
-  bears: 0,
-  setBears: () => {
-    state.bears = 5;  // Direct state mutation
-  },
-}));
-```
-
-✅ **Correct**:
-
-```javascript
-// Proper separation of state logic and action creators
-const useStore = create((set) => ({
-  bears: 0,
-  setBears: () => set({ bears: 5 }),  // Using set to update state
-}));
-```
-
 ### `zustand-rules/no-state-mutation`
 
 **Prevents direct state mutation.** Always use `set` or `setState` to update the store to ensure proper reactivity.
