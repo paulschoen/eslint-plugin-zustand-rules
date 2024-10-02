@@ -1,1 +1,63 @@
-node_modules
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs
+logs
+*.log
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul or jest
+coverage/
+*.lcov
+
+# TypeScript build outputs
+dist/
+build/
+
+# ESLint cache
+.eslintcache
+
+# IDE files
+.vscode/
+.idea/
+
+# Environment files
+.env
+.env.test
+.env.production
+
+# Optional npm cache directory
+.npm
+.npmrc  # Ignoring .npmrc
+
+# MacOS system files
+.DS_Store
+
+# Editor files
+*.swp
+*.swo
+*.bak
+*~
+
+# Ignore compiled JavaScript files if using TypeScript
+*.js
+*.d.ts
+
+# Ignore Jest coverage directory
+coverage/
+
+# Ignore package-lock files if using Yarn
+package-lock.json
+
+# Ignore any local private configuration files
+local.config.json
+
+# Ignore potential lockfiles for pnpm and yarn
+.pnpm-lock.yaml
+yarn.lock
