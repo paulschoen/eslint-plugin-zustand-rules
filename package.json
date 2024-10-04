@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-zustand-rules",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "An ESLint plugin for enforcing best practices in Zustand, including adherence to Flux architecture, promoting efficient state management, and avoiding anti-patterns.",
   "main": "lib/index.js",
   "scripts": {
