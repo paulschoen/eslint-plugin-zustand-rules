@@ -101,9 +101,9 @@ property with a comment on it, or an object built from spreads is reported and l
 
 The four selector rules match on hook *name*, not on anything traceable to zustand. Nothing else is
 possible: your components import `useBearStore` from your own module, so there is no import to
-follow back. That is fine for a warning and worth thinking about for a rewrite, because a
-non-zustand hook that happens to match `^use([A-Z]\w*)?Store$` will get a selector wrapped in
-`useShallow` and a zustand import added to the file.
+follow back. Only bare calls count, so `form.useStore(...)` from TanStack Form and any other
+method named like a store hook are left alone. A *standalone* hook that happens to match
+`^use([A-Z]\w*)?Store$` and is not a zustand store will still get rewritten.
 
 If you have hooks like that, narrow the pattern to your real stores:
 

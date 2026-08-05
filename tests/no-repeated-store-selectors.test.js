@@ -44,6 +44,12 @@ createRuleTester().run('no-repeated-store-selectors', rule, {
        const token = useFishStore((state) => state.honey);
        return { bears, location, token };
      };`,
+    `const Component = () => {
+       const errorMap = form.useStore((state) => state.errorMap);
+       const repaired = form.useStore((state) => state.values.repaired);
+       const boughtOff = form.useStore((state) => state.values.boughtOff);
+       return { errorMap, repaired, boughtOff };
+     };`,
   ],
   invalid: [
     {

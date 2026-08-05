@@ -10,6 +10,7 @@ createRuleTester().run('no-logic-in-selectors', rule, {
     'const value = useBearStore((state) => state[key]);',
     'const whole = useBearStore((state) => state);',
     'const token = useBearStore(selectHoney);',
+    'const flag = form.useStore((state) => state.values.a || state.values.b);',
     `const value = useBearStore((state) => {
        return state.inputs.value;
      });`,

@@ -11,6 +11,8 @@ createRuleTester().run('use-store-selectors', rule, {
     'const count = useStore(vanillaStore, (state) => state.count);',
     'const data = useQuery({ queryKey: [] });',
     'const [state, setState] = useState();',
+    'const errorMap = form.useStore((state) => state.errorMap);',
+    'const value = form.useStore();',
   ],
   invalid: [
     {

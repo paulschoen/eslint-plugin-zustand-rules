@@ -9,6 +9,7 @@ createRuleTester().run('require-shallow-selector', rule, {
     `const [a, b] = useBearStore(useShallow((state) => [state.a, state.b]));`,
     'const count = useBearStore(selectBears);',
     'const value = notAStoreHook((state) => ({ a: state.a }));',
+    'const picked = form.useStore((state) => ({ a: state.a }));',
   ],
   invalid: [
     {
