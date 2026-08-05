@@ -79,7 +79,9 @@ immer.
 
 ## Recommended config
 
-Every rule in `recommended` is `error`. Turn down the ones you want to treat as advisory.
+Every rule in `recommended` is `error` except `selector-name-matches-property`, which is `warn`
+because renaming a selected value on purpose is normal and common. Turn down the others you want to
+treat as advisory.
 
 | Rule | Catches | Fixable |
 | --- | --- | --- |
@@ -88,6 +90,7 @@ Every rule in `recommended` is `error`. Turn down the ones you want to treat as 
 | [`use-store-selectors`](#use-store-selectors) | whole-store subscriptions | partly |
 | [`no-repeated-store-selectors`](#no-repeated-store-selectors) | repeated reads of one store | yes |
 | [`no-logic-in-selectors`](#no-logic-in-selectors) | derived values inside selectors | no |
+| [`selector-name-matches-property`](#selector-name-matches-property) | a selector reading the wrong property | no |
 | [`enforce-state-before-actions`](#enforce-state-before-actions) | state declared after actions | yes |
 | [`enforce-slices-when-large-state`](#enforce-slices-when-large-state) | stores that should be split | no |
 | [`no-multiple-stores`](#no-multiple-stores) | two stores in one module | no |
@@ -302,6 +305,44 @@ Worth knowing which half of this is a correctness issue. Coalescing to a string 
 since zustand compares primitives with `Object.is`, so this rule is about keeping the logic in one
 place. Deriving a new object or array (`Object.keys`, `.map`, `.filter`) is a genuine re-render bug,
 because the selector returns a fresh reference every call.
+
+Takes `storeHookPattern` too.
+
+### `selector-name-matches-property`
+
+Catches the copy-paste bug where a duplicated selector keeps the old property:
+
+```javascript
+const bears = useBearStore((state) => state.rabbits);
+```
+
+TypeScript cannot catch it when both properties share a type, so nothing else will. Only single
+property reads are checked, comparing against the last segment of the path, so
+`const name = useStore((state) => state.user.name)` passes. Computed keys, whole-store reads,
+selectors with logic, and `useShallow` selectors are skipped. Not auto-fixable, since there is no way
+to know which side is wrong, and renaming the variable would mean rewriting every reference.
+
+**This one is `warn`, and it will be noisy.** Renaming a value as you read it is legitimate and
+common, and the rule cannot tell that from a mistake. Measured against a 1491-file app, 32% of
+single property reads would be flagged and none of them was a bug:
+
+```javascript
+const orderNumber = useGlobalStore((state) => state.orderStatusOrderNumber);   // prefix is redundant here
+const isOpen = useGlobalStore((state) => state.isDocumentationModalOpen);      // prefix is redundant here
+const setSpinalBaseURL = useSpxConfigStore((state) => state.setBaseURL);       // deliberately more specific
+const onToggleSymbolic = useGlobalStore((state) => state.toggleSymbolic);      // handler naming convention
+```
+
+The third and fourth are better names than the property they read. If your store keys carry a domain
+prefix that local variables drop, expect a warning per read and turn the rule off:
+
+```json
+{
+  "rules": {
+    "zustand-rules/selector-name-matches-property": "off"
+  }
+}
+```
 
 Takes `storeHookPattern` too.
 
