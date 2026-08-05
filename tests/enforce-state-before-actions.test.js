@@ -73,6 +73,13 @@ createRuleTester().run('enforce-state-before-actions', rule, {
     },
     {
       code: `import { create } from 'zustand';
+const useStore = create((set) => ({ count: 0, increment: () => set({ count: 1 }), label: 'a' }));`,
+      output: `import { create } from 'zustand';
+const useStore = create((set) => ({ count: 0, label: 'a', increment: () => set({ count: 1 }) }));`,
+      errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'label' } }],
+    },
+    {
+      code: `import { create } from 'zustand';
      const useStore = create((set) => ({
        increment: () => set({ count: 1 }),
        // the label the bear answers to

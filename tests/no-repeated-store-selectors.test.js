@@ -140,6 +140,50 @@ const useThing = () => {
       errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
     },
     {
+      code: `export const a = useBearStore((state) => state.a);
+export const b = useBearStore((state) => state.b);
+export const c = useBearStore((state) => state.c);`,
+      output: null,
+      errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
+    },
+    {
+      code: `function useThing(x) {
+  const a = useBearStore((state) => state.a);
+  const b = useBearStore((state) => state.b);
+  if (x) {
+    const c = useBearStore((state) => state.c);
+    return c;
+  }
+  return { a, b };
+}`,
+      output: null,
+      errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
+    },
+    {
+      code: `function useThing() {
+  const a = useBearStore<Bears>((state) => state.a);
+  const b = useBearStore<Bears>((state) => state.b);
+  const c = useBearStore<Bears>((state) => state.c);
+  return { a, b, c };
+}`,
+      output: `import { useShallow } from 'zustand/react/shallow';
+function useThing() {
+  const { a, b, c } = useBearStore<Bears>(useShallow((state) => ({ a: state.a, b: state.b, c: state.c })));
+  return { a, b, c };
+}`,
+      errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
+    },
+    {
+      code: `function useThing() {
+  const a = useBearStore((state) => state.a);
+  const b = useBearStore((state) => state.b);
+  const c = useBearStore((state) => state.c); // the honey count
+  return { a, b, c };
+}`,
+      output: null,
+      errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
+    },
+    {
       code: `const useThing = () => {
        const bears = useBearStore((state) => state.bears);
        // keeps the fish honest

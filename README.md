@@ -93,9 +93,29 @@ Every rule in `recommended` is `error`. Turn down the ones you want to treat as 
 | [`no-multiple-stores`](#no-multiple-stores) | two stores in one module | no |
 
 Anything the fixers touch imports `useShallow` for you, adding it to an existing
-`zustand/shallow` import or writing a new one. Fixers bail rather than guess: a selector with
-logic in it, a read whose result is not a plain `const`, a property with a comment on it, or an
-object built from spreads is reported and left alone.
+`zustand/shallow` import or writing a new one, and matching the file's semicolon style. Fixers bail
+rather than guess: a selector with logic in it, a read whose result is not a plain `const`, a
+property with a comment on it, or an object built from spreads is reported and left alone.
+
+### One thing to know before you `--fix`
+
+The four selector rules match on hook *name*, not on anything traceable to zustand. Nothing else is
+possible: your components import `useBearStore` from your own module, so there is no import to
+follow back. That is fine for a warning and worth thinking about for a rewrite, because a
+non-zustand hook that happens to match `^use([A-Z]\w*)?Store$` will get a selector wrapped in
+`useShallow` and a zustand import added to the file.
+
+If you have hooks like that, narrow the pattern to your real stores:
+
+```json
+{
+  "rules": {
+    "zustand-rules/no-repeated-store-selectors": ["error", { "storeHookPattern": "^use(Bear|Fish)Store$" }]
+  }
+}
+```
+
+Read the first `--fix` diff on a repo before committing it, the same as any other autofix.
 
 ## Rules
 
@@ -236,10 +256,17 @@ reports at 3. Set `maxCalls` to 1 to require grouping as soon as a second read a
 Takes `storeHookPattern` too. This is a readability rule, not a performance fix. Separate atomic
 selectors already re-render only on the values they read.
 
-`--fix` collapses the reads into one `useShallow` call, keeping your variable names as the keys. It
-only fires when every read in the group is a plain `const name = useStore((state) => state.thing)`
-with no comment attached. One read doing anything else and the whole group is left alone, since a
-half-merged group would be worse than none.
+`--fix` collapses the reads into one `useShallow` call, keeping your variable names as the keys. One
+read failing any of these and the whole group is left alone, since a half-merged group would be
+worse than none:
+
+- every read is a plain `const name = useStore((state) => state.thing)`, one declarator, no comment
+- every read sits directly in the same block, so nothing moves across a scope and collides with a
+  name already declared there
+- every read passes one argument and the same type arguments, so nothing gets dropped in the rewrite
+
+That rules out `export const` reads, reads inside an `if`, and reads in a `for` initializer. They
+still get reported.
 
 ### `no-logic-in-selectors`
 
