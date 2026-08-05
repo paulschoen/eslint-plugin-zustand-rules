@@ -1,58 +1,50 @@
-const { RuleTester } = require('eslint');
 const rule = require('../lib/rules/enforce-state-before-actions');
+const { createRuleTester } = require('./rule-tester');
 
-const ruleTester = new RuleTester({
-    parserOptions: { ecmaVersion: 2020, sourceType: 'module' },
-});
+createRuleTester().run('enforce-state-before-actions', rule, {
+  valid: [
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       count: 0,
+       label: 'a',
+       increment: () => set((state) => ({ count: state.count + 1 })),
+       reset: () => set({ count: 0 }),
+     }));`,
 
-ruleTester.run('enforce-state-before-actions', rule, {
-    valid: [
-        {
-            code: `
-                import { create } from 'zustand';
-                const useStore = create((set) => ({
-                    state1: 'value1',
-                    state2: 'value2',
-                    action1: () => set({ state1: 'newValue1' }),
-                    action2: () => set({ state2: 'newValue2' }),
-                }));
-            `,
-        },
-        {
-            code: `
-                import { create } from 'zustand';
-                const useStore = create((set) => ({
-                    state1: 'value1',
-                    action1: () => set({ state1: 'newValue1' }),
-                }));
-            `,
-        },
-    ],
-    invalid: [
-        {
-            code: `
-                import { create } from 'zustand';
-                const useStore = create((set) => ({
-                    action1: () => set({ state1: 'newValue1' }),
-                    state1: 'value1',
-                }));
-            `,
-            errors: [{ messageId: 'stateBeforeActions' }],
-        },
-        {
-            code: `
-                import { create } from 'zustand';
-                const useStore = create((set) => ({
-                    action1: () => set({ state1: 'newValue1' }),
-                    state1: 'value1',
-                    action2: () => set({ state2: 'newValue2' }),
-                    state2: 'value2',
-                }));
-            `,
-            errors: [
-                { messageId: 'stateBeforeActions' },
-                { messageId: 'stateBeforeActions' },
-            ],
-        },
-    ],
+    `import type { StateCreator } from 'zustand';
+     export const createSlice: StateCreator<Slice> = (set) => ({
+       open: false,
+       setOpen: (open) => { set({ open }); },
+     });`,
+
+    `import { create } from 'zustand';
+     const useStore = create<Store>()(urlSync({ stateToUrlMap: {} }, (...args) => ({
+       ...createOneSlice(...args),
+       ...createTwoSlice(...args),
+     })));`,
+
+    `const config = { onInit: () => {}, name: 'x' };`,
+  ],
+  invalid: [
+    {
+      code: `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       count: 0,
+       increment: () => set({ count: 1 }),
+       label: 'a',
+     }));`,
+      errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'label' } }],
+    },
+    {
+      code: `import type { StateCreator } from 'zustand';
+     export const createSlice: StateCreator<Slice> = (set) => {
+       return {
+         open: false,
+         setOpen: (open) => { set({ open }); },
+         title: '',
+       };
+     };`,
+      errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'title' } }],
+    },
+  ],
 });

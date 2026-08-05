@@ -1,21 +1,29 @@
-const { RuleTester } = require('eslint');
 const rule = require('../lib/rules/use-store-selectors');
+const { createRuleTester } = require('./rule-tester');
 
-const ruleTester = new RuleTester({
-  parserOptions: { ecmaVersion: 2020, sourceType: 'module' },
-});
-ruleTester.run('use-store-selectors', rule, {
+createRuleTester().run('use-store-selectors', rule, {
   valid: [
-    'count = useStore(state => state.count);'
+    'const count = useStore((state) => state.count);',
+    'const count = useBearStore((state) => state.count);',
+    'const count = useFishStore((store) => store.count);',
+    'const count = useBearStore(selectBears);',
+    'const value = useBearStore(useShallow((state) => ({ a: state.a })));',
+    'const count = useStore(vanillaStore, (state) => state.count);',
+    'const data = useQuery({ queryKey: [] });',
+    'const [state, setState] = useState();',
   ],
   invalid: [
     {
-      code: 'count = useStore();',
-      errors: [{ message: 'You should use selectors when calling useStore to improve performance.' }]
+      code: 'const store = useStore();',
+      errors: [{ messageId: 'selectorRequired', data: { hookName: 'useStore' } }],
     },
     {
-      code: 'const store = useStore(state => state.count, anotherState => anotherState.value);',
-      errors: [{ message: 'You should use selectors when calling useStore to improve performance.' }]
-    }
-  ]
+      code: 'const store = useBearStore();',
+      errors: [{ messageId: 'selectorRequired' }],
+    },
+    {
+      code: 'const count = useBearStore((state) => state.count, shallow);',
+      errors: [{ messageId: 'equalityFnRemoved' }],
+    },
+  ],
 });
