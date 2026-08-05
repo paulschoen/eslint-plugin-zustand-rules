@@ -114,6 +114,64 @@ export const createSlice: StateCreator<Slice> = (set) => ({
   items: [],
   add: (item) => { state.items.push(item); },
 });`,
+      output: `import type { StateCreator } from 'zustand';
+export const createSlice: StateCreator<Slice> = (set) => ({
+  items: [],
+  add: (item) => { set((state) => ({ items: [...state.items, item] })); },
+});`,
+      errors: [{ messageId: 'arrayMutation' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  addMany: (a, b) => { state.items.push(a, ...b); },
+}));`,
+      output: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  addMany: (a, b) => { set((state) => ({ items: [...state.items, a, ...b] })); },
+}));`,
+      errors: [{ messageId: 'arrayMutation' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  prepend: (item) => { state.items.unshift(item); },
+}));`,
+      output: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  prepend: (item) => { set((state) => ({ items: [item, ...state.items] })); },
+}));`,
+      errors: [{ messageId: 'arrayMutation' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  take: () => { const last = state.items.pop(); return last; },
+}));`,
+      output: null,
+      errors: [{ messageId: 'arrayMutation' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  count: () => { const size = state.items.push(1); return size; },
+}));`,
+      output: null,
+      errors: [{ messageId: 'arrayMutation' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  nested: { items: [] },
+  add: (item) => { state.nested.items.push(item); },
+}));`,
+      output: null,
       errors: [{ messageId: 'arrayMutation' }],
     },
     {
@@ -122,6 +180,7 @@ const useStore = create<Store>()((set) => ({
   nested: { count: 0 },
   bump: () => { state.nested.count = 1; },
 }));`,
+      output: null,
       errors: [{ messageId: 'assignment' }],
     },
   ],

@@ -53,6 +53,7 @@ createRuleTester().run('no-repeated-store-selectors', rule, {
        const honey = useBearStore((state) => state.honey || state.nuts);
        return { bears, fish, honey };
      };`,
+      output: null,
       errors: [
         {
           messageId: 'repeatedSelectors',
@@ -64,6 +65,11 @@ createRuleTester().run('no-repeated-store-selectors', rule, {
       code: `const useThing = () => {
        const bears = useBearStore((state) => state.bears);
        const location = useBearStore((state) => state.fish);
+       return { bears, location };
+     };`,
+      output: `import { useShallow } from 'zustand/react/shallow';
+const useThing = () => {
+       const { bears, location } = useBearStore(useShallow((state) => ({ bears: state.bears, location: state.fish })));
        return { bears, location };
      };`,
       options: [{ maxCalls: 1 }],
@@ -80,6 +86,11 @@ createRuleTester().run('no-repeated-store-selectors', rule, {
        const b = useBearStore((store) => store.fish);
        const c = useBearStore((store) => store.honey);
        const d = useBearStore((store) => store.nuts);
+       return { a, b, c, d };
+     }`,
+      output: `import { useShallow } from 'zustand/react/shallow';
+function useThing() {
+       const { a, b, c, d } = useBearStore(useShallow((state) => ({ a: state.bears, b: state.fish, c: state.honey, d: state.nuts })));
        return { a, b, c, d };
      }`,
       errors: [
@@ -99,6 +110,14 @@ createRuleTester().run('no-repeated-store-selectors', rule, {
        const z = useFishStore((state) => state.z);
        return { a, b, c, x, y, z };
      };`,
+      output: `import { useShallow } from 'zustand/react/shallow';
+const useThing = () => {
+       const { a, b, c } = useBearStore(useShallow((state) => ({ a: state.a, b: state.b, c: state.c })));
+       const x = useFishStore((state) => state.x);
+       const y = useFishStore((state) => state.y);
+       const z = useFishStore((state) => state.z);
+       return { a, b, c, x, y, z };
+     };`,
       errors: [
         {
           messageId: 'repeatedSelectors',
@@ -109,6 +128,27 @@ createRuleTester().run('no-repeated-store-selectors', rule, {
           data: { hookName: 'useFishStore', count: 3 },
         },
       ],
+    },
+    {
+      code: `const useThing = () => {
+       const bears = useBearStore((state) => state.bears);
+       const fish = useBearStore((state) => state.fish);
+       useBearStore((state) => state.honey);
+       return { bears, fish };
+     };`,
+      output: null,
+      errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
+    },
+    {
+      code: `const useThing = () => {
+       const bears = useBearStore((state) => state.bears);
+       // keeps the fish honest
+       const fish = useBearStore((state) => state.fish);
+       const honey = useBearStore((state) => state.honey);
+       return { bears, fish, honey };
+     };`,
+      output: null,
+      errors: [{ messageId: 'repeatedSelectors', data: { hookName: 'useBearStore', count: 3 } }],
     },
   ],
 });

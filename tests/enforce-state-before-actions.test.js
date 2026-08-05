@@ -33,6 +33,12 @@ createRuleTester().run('enforce-state-before-actions', rule, {
        increment: () => set({ count: 1 }),
        label: 'a',
      }));`,
+      output: `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       count: 0,
+       label: 'a',
+       increment: () => set({ count: 1 }),
+     }));`,
       errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'label' } }],
     },
     {
@@ -44,7 +50,36 @@ createRuleTester().run('enforce-state-before-actions', rule, {
          title: '',
        };
      };`,
+      output: `import type { StateCreator } from 'zustand';
+     export const createSlice: StateCreator<Slice> = (set) => {
+       return {
+         open: false,
+         title: '',
+         setOpen: (open) => { set({ open }); },
+       };
+     };`,
       errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'title' } }],
+    },
+    {
+      code: `import { create } from 'zustand';
+     const useStore = create((...args) => ({
+       count: 0,
+       ...createOneSlice(...args),
+       increment: () => set({ count: 1 }),
+       label: 'a',
+     }));`,
+      output: null,
+      errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'label' } }],
+    },
+    {
+      code: `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       increment: () => set({ count: 1 }),
+       // the label the bear answers to
+       label: 'a',
+     }));`,
+      output: null,
+      errors: [{ messageId: 'stateBeforeActions', data: { propertyName: 'label' } }],
     },
   ],
 });

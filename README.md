@@ -84,13 +84,18 @@ Every rule in `recommended` is `error`. Turn down the ones you want to treat as 
 | Rule | Catches | Fixable |
 | --- | --- | --- |
 | [`no-state-mutation`](#no-state-mutation) | broken reactivity | yes |
-| [`require-shallow-selector`](#require-shallow-selector) | wasted re-renders, v5 render loops | no |
-| [`use-store-selectors`](#use-store-selectors) | whole-store subscriptions | no |
-| [`no-repeated-store-selectors`](#no-repeated-store-selectors) | repeated reads of one store | no |
+| [`require-shallow-selector`](#require-shallow-selector) | wasted re-renders, v5 render loops | yes |
+| [`use-store-selectors`](#use-store-selectors) | whole-store subscriptions | partly |
+| [`no-repeated-store-selectors`](#no-repeated-store-selectors) | repeated reads of one store | yes |
 | [`no-logic-in-selectors`](#no-logic-in-selectors) | derived values inside selectors | no |
-| [`enforce-state-before-actions`](#enforce-state-before-actions) | state declared after actions | no |
+| [`enforce-state-before-actions`](#enforce-state-before-actions) | state declared after actions | yes |
 | [`enforce-slices-when-large-state`](#enforce-slices-when-large-state) | stores that should be split | no |
 | [`no-multiple-stores`](#no-multiple-stores) | two stores in one module | no |
+
+Anything the fixers touch imports `useShallow` for you, adding it to an existing
+`zustand/shallow` import or writing a new one. Fixers bail rather than guess: a selector with
+logic in it, a read whose result is not a plain `const`, a property with a comment on it, or an
+object built from spreads is reported and left alone.
 
 ## Rules
 
@@ -98,8 +103,11 @@ Every rule in `recommended` is `error`. Turn down the ones you want to treat as 
 
 Store state is immutable. Mutating it skips the subscription notification, so components never
 re-render. Reports assignments to `state.*` and mutating array methods (`push`, `pop`, `shift`,
-`unshift`, `splice`, `sort`, `reverse`, `fill`, `copyWithin`) inside a store or slice. Assignments
-are auto-fixable.
+`unshift`, `splice`, `sort`, `reverse`, `fill`, `copyWithin`) inside a store or slice.
+
+`--fix` rewrites assignments as a `set` call, and rewrites `push` and `unshift` as a spread when the
+return value is unused. The other array methods are reported without a fix, since `pop` and `splice`
+return something the code may be using.
 
 🚫 Incorrect:
 
@@ -132,6 +140,8 @@ const useStore = create((set) => ({
 A selector that builds a new object or array returns a fresh reference every call, so the component
 re-renders on every store change. In v5 it can loop forever. Wrap it in `useShallow`.
 
+`--fix` wraps the selector and adds the import.
+
 🚫 Incorrect:
 
 ```javascript
@@ -152,6 +162,10 @@ const bears = useStore((state) => state.bears);
 
 Calling a store hook with no arguments subscribes the component to every state change. Also reports
 the equality-function second argument, which v5 removed in favor of `useShallow`.
+
+`--fix` handles the v5 migration: it drops the equality function and wraps the selector in
+`useShallow`. The no-argument call is reported without a fix, because only you know what it should
+be selecting.
 
 🚫 Incorrect:
 
@@ -222,6 +236,11 @@ reports at 3. Set `maxCalls` to 1 to require grouping as soon as a second read a
 Takes `storeHookPattern` too. This is a readability rule, not a performance fix. Separate atomic
 selectors already re-render only on the values they read.
 
+`--fix` collapses the reads into one `useShallow` call, keeping your variable names as the keys. It
+only fires when every read in the group is a plain `const name = useStore((state) => state.thing)`
+with no comment attached. One read doing anything else and the whole group is left alone, since a
+half-merged group would be worse than none.
+
 ### `no-logic-in-selectors`
 
 A selector should read state, not derive from it. Fallbacks and computation inside a selector get
@@ -262,6 +281,10 @@ Takes `storeHookPattern` too.
 ### `enforce-state-before-actions`
 
 Group state first, then the actions that update it. Reports state declared after the first action.
+
+`--fix` moves the property up. Defining a function has no side effects, so hoisting a value past a
+set of actions cannot change behavior. It skips objects containing spreads, where a moved key could
+land on the wrong side of a slice, and skips properties carrying comments.
 
 🚫 Incorrect:
 
