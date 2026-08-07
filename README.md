@@ -225,7 +225,7 @@ stores in one component are fine.
 ```javascript
 const bears = useBearStore((state) => state.bears);
 const fish = useBearStore((state) => state.fish);
-const honey = useBearStore((state) => state.honey || state.nuts);
+const honey = useBearStore((state) => state.honey);
 ```
 
 ✅ Correct:
@@ -237,7 +237,7 @@ const { bears, fish, honey } = useBearStore(
   useShallow((state) => ({
     bears: state.bears,
     fish: state.fish,
-    honey: state.honey || state.nuts,
+    honey: state.honey,
   })),
 );
 ```
