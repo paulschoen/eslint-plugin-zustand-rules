@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/paulschoen/eslint-plugin-zustand-rules/compare/v1.2.0...v1.2.1) (2026-08-07)
+
+### Documentation
+
+* drop the noise measurement from `selector-name-matches-property` ([2ea88e4](https://github.com/paulschoen/eslint-plugin-zustand-rules/commit/2ea88e4))
+
 # [1.2.0](https://github.com/paulschoen/eslint-plugin-zustand-rules/compare/v1.1.0...v1.2.0) (2026-08-07)
 
 ### Features
