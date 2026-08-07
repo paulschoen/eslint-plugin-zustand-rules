@@ -20,6 +20,35 @@ const useStore = create<Store>()(urlSync({ stateToUrlMap: {} }, (...args) => ({
   ...createTwoSlice(...args),
   ...createThreeSlice(...args),
 })));`,
+
+    buildStore(21).replace("import { create } from 'zustand';\n", ''),
+
+    `import { create } from 'zustand';
+function helper() { return 1; }`,
+
+    `import { create } from 'zustand';
+const useStore = create((set) => makeSlice(set));`,
+
+    `import { create } from 'zustand';
+const useStore = create((set) => { return makeSlice(set); });`,
+
+    `import { create } from 'zustand';
+const useStore = create!((set) => ({ count: 0 }));`,
+
+    `import { create } from 'zustand';
+const useStore = (create<Store>)((set) => ({ count: 0 }));`,
+
+    `import { create } from 'zustand';
+(function () { return 1; })();`,
+
+    `import { create } from 'zustand';
+const createSlice = ((set) => ({ count: 0 })) as StateCreator<Slice>;`,
+
+    `import { create } from 'zustand';
+const createSlice: (set: unknown) => object = (set) => ({ count: 0 });`,
+
+    `import { create } from 'zustand';
+wrap((set) => ({ count: 0 }));`,
   ],
   invalid: [
     {

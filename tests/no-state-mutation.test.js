@@ -28,6 +28,54 @@ createRuleTester().run('no-state-mutation', rule, {
     `import { create } from 'zustand';
      const useStore = create((set) => ({ items: [] }));
      function unrelated(state) { state.items.push(1); }`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       count: 0,
+       reset: () => { count = 0; },
+     }));`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       count: 0,
+       track: () => { analytics.count = 1; },
+     }));`,
+
+    `import { create } from 'zustand';
+     state.count = 1;`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       items: [],
+       ping: () => { notify(); },
+     }));`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       items: [],
+       call: () => { state.items['push'](); },
+     }));`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       items: [],
+       list: () => state.items.map((item) => item),
+     }));`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       items: [],
+       add: (item) => { items.push(item); },
+     }));`,
+
+    `import create from 'zustand';
+     const useStore = create((set) => ({ count: 0 }));`,
+
+    `import { create } from 'zustand';
+     const useStore = create((set) => ({
+       items: [],
+       add: (item) => { other.items.push(item); },
+     }));`,
   ],
   invalid: [
     {
@@ -182,6 +230,55 @@ const useStore = create<Store>()((set) => ({
 }));`,
       output: null,
       errors: [{ messageId: 'assignment' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  'my-key': 0,
+  rename: () => { state['my-key'] = 5; },
+}));`,
+      output: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  'my-key': 0,
+  rename: () => { set({ "my-key": 5 }); },
+}));`,
+      errors: [{ messageId: 'assignment' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  count: 0,
+  bump: (key) => { state[key] = 5; },
+}));`,
+      output: null,
+      errors: [{ messageId: 'assignment' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((...args) => ({
+  count: 0,
+  bump: () => { state.count = 1; },
+}));`,
+      output: null,
+      errors: [{ messageId: 'assignment' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  items: [],
+  drop: () => { state.items.pop(); },
+}));`,
+      output: null,
+      errors: [{ messageId: 'arrayMutation' }],
+    },
+    {
+      code: `import { create } from 'zustand';
+const useStore = create((set) => ({
+  'my-list': [],
+  add: (item) => { state['my-list'].push(item); },
+}));`,
+      output: null,
+      errors: [{ messageId: 'arrayMutation' }],
     },
   ],
 });
