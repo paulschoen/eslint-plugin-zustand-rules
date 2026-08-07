@@ -9,6 +9,7 @@
 ### Features
 
 * autofix five rules with `--fix` ([300b573](https://github.com/paulschoen/eslint-plugin-zustand-rules/commit/300b573))
+* warn when a selector variable name and property disagree ([a11f4f4](https://github.com/paulschoen/eslint-plugin-zustand-rules/commit/a11f4f4))
 
 ### Bug Fixes
 
