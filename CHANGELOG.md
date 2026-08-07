@@ -1,3 +1,14 @@
+# [1.2.0](https://github.com/paulschoen/eslint-plugin-zustand-rules/compare/v1.1.0...v1.2.0) (2026-08-07)
+
+### Features
+
+* autofix five rules with `--fix` ([300b573](https://github.com/paulschoen/eslint-plugin-zustand-rules/commit/300b573))
+
+### Bug Fixes
+
+* bail on autofixes that would drop code or collide ([5c6b98b](https://github.com/paulschoen/eslint-plugin-zustand-rules/commit/5c6b98b))
+* only treat bare calls as store hook reads ([6850e65](https://github.com/paulschoen/eslint-plugin-zustand-rules/commit/6850e65))
+
 ## [1.0.2](https://github.com/paulschoen/eslint-plugin-zustand-rules/compare/v1.0.1...v1.0.2) (2024-10-04)
 
 ### Bug Fixes
