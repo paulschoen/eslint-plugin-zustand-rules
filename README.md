@@ -322,19 +322,9 @@ property reads are checked, comparing against the last segment of the path, so
 selectors with logic, and `useShallow` selectors are skipped. Not auto-fixable, since there is no way
 to know which side is wrong, and renaming the variable would mean rewriting every reference.
 
-**This one is `warn`, and it will be noisy.** Renaming a value as you read it is legitimate and
-common, and the rule cannot tell that from a mistake. Measured against a 1491-file app, 32% of
-single property reads would be flagged and none of them was a bug:
-
-```javascript
-const orderNumber = useGlobalStore((state) => state.orderStatusOrderNumber);   // prefix is redundant here
-const isOpen = useGlobalStore((state) => state.isDocumentationModalOpen);      // prefix is redundant here
-const setSpinalBaseURL = useSpxConfigStore((state) => state.setBaseURL);       // deliberately more specific
-const onToggleSymbolic = useGlobalStore((state) => state.toggleSymbolic);      // handler naming convention
-```
-
-The third and fourth are better names than the property they read. If your store keys carry a domain
-prefix that local variables drop, expect a warning per read and turn the rule off:
+**This one is `warn`.** Renaming a value as you read it is legitimate and common, and the rule cannot
+tell that from a mistake. If your store keys carry a domain prefix that local variables drop, expect a
+warning per read and turn the rule off:
 
 ```json
 {
